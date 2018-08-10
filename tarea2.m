@@ -6,14 +6,14 @@
 
 %Graficos con OpenGL
 graphics_toolkit('gnuplot');
-
+%Aumentamos la precision de salida
+output_precision(10);
 %Entrada del sistema.
-x = input("Ingrese un valor para x: ")
+xi = input("Ingrese un valor para x: ")
 %Declaracion de las variables
 h0     = 1;
-lambda = double(0.1);
+lambda = double(1.1);
 xil  = 0;%xi-1
-xi   = 0;%xi
 xip  = 0;%xi+1
 fxil = 0;%f(xi-1)
 fxi  = 0;%f(xi)
@@ -26,70 +26,30 @@ error_da   = zeros(1,500);%Vector con el error de la diferencia hacia adelante
 error_dd   = zeros(1,500);%Vector con el error de la diferencia hacia atras
 error_c    = zeros(1,500);%Vector con la diferencia centrada
 
+valorVerdadero = 2*xi*(e^(xi^2))*cos((pi/180)*(e^(xi^2)))
 
 #Ciclo Que define los valores de xi , xi+1 y xi-1
 #ademas de sus evaluaciones en la funcion.
-for i=1:500
+for i=1:10
   if (i==1)
-    vector_h(i) = h0;
+    vector_h(i) = h0;               %Excepcion para i = 1 con  h0 = 1
   else
-    vector_h(i) = vector_h(i-1)/10;  #agregar excepcion para i = 1
+    vector_h(i) = lambda*vector_h(i-1); %Con i!=1 se aplica h(i)=lambda*h(i-1) 
   endif
-  xil  = xi - vector_h(i);%xi-1 = xi-h
-  xip  = xi + vector_h(i);%xi+1 = xi+h
+  xil  = xi - vector_h(i);      %xi-1 = xi-h
+  xip  = xi + vector_h(i);      %xi+1 = xi+h
   fxil = double(sin(e^(xil^2)));%f(xi-1)
-  fxi  = double(sin(e^(x^2)));  %f(xi)
+  fxi  = double(sin(e^(xi^2)));  %f(xi)
   fxip = double(sin(e^(xip^2)));%f(xi+1)
 
-                           #######################Voy por aca##################
-
-  vector_da(i) = double((fxip-fxi)/(xip-xi));
-  vector_dd(i) = double((fxi-fxil)/(xi-xil));
+  vector_da(i) = double((fxi-fxil)/(xi-xil));
+  vector_dd(i) = double((fxip-fxi)/(xip-xi));
   vector_c (i) = double((fxip-fxil)/(2*vector_h(i)));
 
-  #Excepcion para i = 1, no existe error pues no contamos
-  #con una aproximacion anterior para calcular el error
-  if (i==1)
-    error_da(i)  = 0;
-    error_dd(i)  = 0;
-    error_c (i)  = 0;
-  else
-    error_da(i)  = abs(((vector_da(i-1)-vector_da(i))/(vector_da(i)))*100);
-    error_dd(i)  = abs(((vector_dd(i-1)-vector_dd(i))/(vector_dd(i)))*100);
-    error_c (i)  = abs(((vector_c (i-1)-vector_c (i))/(vector_c(i)))*100);
-  endif
-endfor
-#{
-
-#Ciclo Que define los valores de xi , xi+1 y xi-1
-#ademas de sus evaluaciones en la funcion.
-for i=1:500
-  if (i==1)
-    vector_h = h0;
-  else
-    vector_h(i) = vector_h(i-1)/10;  #agregar excepcion para i = 1
-  endif
-  xil  = xi - vector_h(i);
-  xip  = xi + vector_h(i);
-  fxil = double(polinomio(1)*(xil^4) -polinomio(3)*(xil^2));
-  fxi  = double(polinomio(1)*(xi^4)  -polinomio(3)*(xi^2));
-  fxip = double(polinomio(1)*(xip^4) -polinomio(3)*(xip^2)); 
+  error_da(i)  = (valorVerdadero-vector_da(i))/valorVerdadero; %(vv-va)/vv
+  error_dd(i)  = (valorVerdadero-vector_dd(i))/valorVerdadero;
+  error_c (i)  = (valorVerdadero-vector_c(i))/valorVerdadero;
   
-  vector_da(i) = double((fxip-fxi)/(xip-xi));
-  vector_dd(i) = double((fxi-fxil)/(xi-xil));
-  vector_c (i) = double((fxip-fxil)/(2*vector_h(i)));
-
-  #Excepcion para i = 1, no existe error pues no contamos
-  #con una aproximacion anterior para calcular el error
-  if (i==1)
-    error_da(i)  = 0;
-    error_dd(i)  = 0;
-    error_c (i)  = 0;
-  else
-    error_da(i)  = abs(((vector_da(i-1)-vector_da(i))/(vector_da(i)))*100);
-    error_dd(i)  = abs(((vector_dd(i-1)-vector_dd(i))/(vector_dd(i)))*100);
-    error_c (i)  = abs(((vector_c (i-1)-vector_c (i))/(vector_c(i)))*100);
-  endif
 endfor
 
 #Definimos las propiedades de la grafica.
@@ -106,4 +66,3 @@ legend("Adelante","Atras","Centrada");
 grid;
 hold off;
 
-#}
